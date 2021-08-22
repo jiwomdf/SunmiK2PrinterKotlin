@@ -7,11 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
-import android.widget.ProgressBar
 import android.widget.Toast
 import com.example.sunmik2printerkotlin.di.Dependency
-import com.example.sunmik2printerkotlin.remote.json.ResponseClass
-import com.example.sunmik2printerkotlin.remote.request.RequestClass
+import com.example.sunmik2printerkotlin.remote.json.PostCounterResponse
+import com.example.sunmik2printerkotlin.remote.json.QueueNumberResponse
+import com.example.sunmik2printerkotlin.remote.request.PostCounterRequest
+import com.example.sunmik2printerkotlin.remote.request.QueueNumberRequest
 import com.example.sunmik2printerkotlin.util.Event
 import com.sunmi.extprinterservice.ExtPrinterService
 import kotlinx.android.synthetic.main.activity_main.*
@@ -19,28 +20,42 @@ import java.lang.Exception
 
 class MainActivity : AppCompatActivity(), MainPresenterView {
 
-    lateinit var presenter: MainPresenter
+    private lateinit var presenter: MainPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         presenter = MainPresenter(this, Dependency.inject())
-        presenter.postCounter(RequestClass())
+        presenter.postCounter(PostCounterRequest())
     }
 
-    override fun onSuccess(result: Event.Success<ResponseClass>) {
+    override fun onSuccessPostData(result: Event.Success<PostCounterResponse>) {
+        pb_loading.visibility = View.GONE
+        presenter.getQueueNumber(QueueNumberRequest())
+    }
+
+    override fun onLoadingPostData() {
+        pb_loading.visibility = View.VISIBLE
+    }
+
+    override fun onFailedPostData(error: Event.Error) {
+        pb_loading.visibility = View.GONE
+        Toast.makeText(this@MainActivity, error.message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onSuccessGetQueue(result: Event.Success<QueueNumberResponse>) {
         pb_loading.visibility = View.GONE
         printKiosK()
     }
 
-    override fun onLoading() {
+    override fun onLoadingGetQueue() {
         pb_loading.visibility = View.VISIBLE
     }
 
-    override fun onFailed(error: Event.Error) {
+    override fun onFailedGetQueue(error: Event.Error) {
         pb_loading.visibility = View.GONE
-        Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@MainActivity, error.message, Toast.LENGTH_SHORT).show()
     }
 
     private fun printKiosK() {
