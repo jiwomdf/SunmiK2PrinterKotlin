@@ -11,28 +11,9 @@ import com.example.sunmik2printerkotlin.remote.service.Service
 
 class Repository(private val service: Service): BaseRepository() {
 
-    fun postCounter(postCounterRequest: PostCounterRequest): ApiResponses<PostCounterResponse> {
+    suspend fun getQueueNumber(norec: String): ApiResponses<QueueNumberResponse> {
         return try {
-            when(val response = execute(service.postCounter(postCounterRequest))){
-                is RequestHandler.Success -> {
-                    ApiResponses.Success(response.body)
-                }
-                is RequestHandler.ErrorServer -> {
-                    if(response.code == HTTP_NOT_AUTHORIZED_CODE){
-                        ApiResponses.NotAuthorized
-                    } else {
-                        ApiResponses.Error(response.exception.message.toString())
-                    }
-                }
-            }
-        } catch (ex: Exception){
-            ApiResponses.Error(ex.message.toString())
-        }
-    }
-
-    fun getQueueNumber(queueNumberRequest: QueueNumberRequest): ApiResponses<QueueNumberResponse> {
-        return try {
-            when(val response = execute(service.getQueueNumber(queueNumberRequest))){
+            when(val response = execute(service.getQueueNumber(norec))){
                 is RequestHandler.Success -> {
                     ApiResponses.Success(response.body)
                 }

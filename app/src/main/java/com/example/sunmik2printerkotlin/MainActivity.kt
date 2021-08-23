@@ -3,20 +3,22 @@ package com.example.sunmik2printerkotlin
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
 import android.widget.Toast
 import com.example.sunmik2printerkotlin.di.Dependency
-import com.example.sunmik2printerkotlin.remote.json.PostCounterResponse
 import com.example.sunmik2printerkotlin.remote.json.QueueNumberResponse
-import com.example.sunmik2printerkotlin.remote.request.PostCounterRequest
-import com.example.sunmik2printerkotlin.remote.request.QueueNumberRequest
 import com.example.sunmik2printerkotlin.util.Event
 import com.sunmi.extprinterservice.ExtPrinterService
 import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
+
+/**
+ * https://www.printkiosk.com?norec=00002990-6ff1-11eb-9ae6-f7140383
+ */
 
 class MainActivity : AppCompatActivity(), MainPresenterView {
 
@@ -27,26 +29,26 @@ class MainActivity : AppCompatActivity(), MainPresenterView {
         setContentView(R.layout.activity_main)
 
         presenter = MainPresenter(this, Dependency.inject())
-        presenter.postCounter(PostCounterRequest())
+
+        val norec = getQueryString()
+
+        presenter.getQueueNumber("00002990-6ff1-11eb-9ae6-f7140383")
+        /* if(!norec.isNullOrEmpty())
+            presenter.getQueueNumber(norec)
+        else
+            Toast.makeText(this, "Deep Linking Query Param is empty", Toast.LENGTH_SHORT).show() */
     }
 
-    override fun onSuccessPostData(result: Event.Success<PostCounterResponse>) {
-        pb_loading.visibility = View.GONE
-        presenter.getQueueNumber(QueueNumberRequest())
-    }
+    private fun getQueryString(): String? {
 
-    override fun onLoadingPostData() {
-        pb_loading.visibility = View.VISIBLE
-    }
-
-    override fun onFailedPostData(error: Event.Error) {
-        pb_loading.visibility = View.GONE
-        Toast.makeText(this@MainActivity, error.message, Toast.LENGTH_SHORT).show()
+        //norec=00002990-6ff1-11eb-9ae6-f7140383
+        val data: Uri? = intent?.data
+        return data?.getQueryParameter("norec")
     }
 
     override fun onSuccessGetQueue(result: Event.Success<QueueNumberResponse>) {
         pb_loading.visibility = View.GONE
-        printKiosK()
+        printKiosK(result.data)
     }
 
     override fun onLoadingGetQueue() {
@@ -58,7 +60,13 @@ class MainActivity : AppCompatActivity(), MainPresenterView {
         Toast.makeText(this@MainActivity, error.message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun printKiosK() {
+    private fun printKiosK(data: QueueNumberResponse) {
+
+        data.jumlahantrian
+        data.noantrian
+        data.ruangan
+        data.status
+
         //for more documentation, read here: https://file.cdn.sunmi.com/SUNMIDOCS/Sunmi-k2-Print-Service-Development-Documentation.pdf
         var ext: ExtPrinterService
         val serviceConnection: ServiceConnection = object : ServiceConnection {

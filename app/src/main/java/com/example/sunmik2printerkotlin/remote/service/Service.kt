@@ -8,16 +8,12 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface Service {
 
-    @POST("")
-    fun postCounter(
-        @Body request: PostCounterRequest
-    ): Response<PostCounterResponse>
-
-    @GET("")
-    fun getQueueNumber(
-        @Body request: QueueNumberRequest
+    @GET("/service/medifirst2000/bridging/anta/get-print-noantrian?")
+    suspend fun getQueueNumber(
+        @Query("norec") norec : String
     ): Response<QueueNumberResponse>
 }

@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object Dependency {
 
-    const val BASE_URL = ""
+    const val BASE_URL = "http://202.51.105.98:9000"
 
     private fun provideRepository(service: Service): Repository {
         return Repository(service)
